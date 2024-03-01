@@ -1,95 +1,79 @@
-import random
-import os
-import time
+import curses
+from random import randint
 
-# Function to clear the screen
-def clear_screen():
-    os.system('clear')
+# Initialize the screen
+curses.initscr()
+curses.start_color()  # Initialize colors
+curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)  # Food color pair
+curses.init_pair(2, curses.COLOR_MAGENTA, curses.COLOR_BLACK)  # Snake color pair
 
-# Function to display the maze
-def display_maze(maze, player_position, enemy_position):
-    for y, row in enumerate(maze):
-        for x, cell in enumerate(row):
-            if (x, y) == player_position:
-                print('P', end='')
-            elif (x, y) == enemy_position:
-                print('E', end='')
-            else:
-                print(cell, end='')
-        print()  # Newline for the next row
+win = curses.newwin(20, 60, 0, 0)  # Create a new window: height, width, start_y, start_x
+win.keypad(1)  # Accept keypad input
+curses.noecho()  # Prevent input from displaying in the screen
+curses.curs_set(0)  # Hide the cursor
+win.border(0)  # Draw a border around the screen
+win.nodelay(1)  # Make `win.getch()` non-blocking
 
-# Function to move the player or enemy
-def move_character(position, direction, maze):
-    x, y = position
-    moves = {'w': (x, y-1), 's': (x, y+1), 'a': (x-1, y), 'd': (x+1, y)}
-    new_position = moves.get(direction, position)
-    new_x, new_y = new_position
-    if maze[new_y][new_x] == '.':
-        return new_position
-    return position  # Return the original position if move is not possible
+# Snake and food
+snake = [(4, 10), (4, 9), (4, 8)]  # Initial snake co-ordinates
+food = (10, 20)  # First food co-ordinates
+win.addch(food[0], food[1], '#', curses.color_pair(1))  # Print the food with red color
 
-# Function to generate a simple maze using recursive backtracking
-def generate_maze(width, height):
-    def carve_passages_from(x, y, maze):
-        directions = ['w', 'e', 'n', 's']
-        random.shuffle(directions)
+# Game logic
+score = 0
+ESC = 27
+key = curses.KEY_RIGHT
 
-        for direction in directions:
-            dx, dy = {'w': (-1, 0), 'e': (1, 0), 'n': (0, -1), 's': (0, 1)}[direction]
-            nx, ny = x + dx*2, y + dy*2
-            if 0 <= nx < width and 0 <= ny < height and maze[ny][nx] == '#':
-                maze[ny-dy][nx-dx] = '.'
-                maze[ny][nx] = '.'
-                carve_passages_from(nx, ny, maze)
+while True:
+    win.addstr(0, 2, 'Score: ' + str(score) + ' ')  # Print the score
+    win.timeout(150 - (len(snake)) // 5 + len(snake) // 10 % 120)  # Increase the speed of the snake as it gets longer
 
-    maze = [['#' for _ in range(width)] for _ in range(height)]
-    start_x, start_y = random.randrange(1, width, 2), random.randrange(1, height, 2)
-    maze[start_y][start_x] = '.'
-    carve_passages_from(start_x, start_y, maze)
-    return maze
+    prev_key = key
+    event = win.getch()
+    key = event if event != -1 else prev_key
 
-# Function to move the enemy randomly
-def move_enemy(enemy_position, maze):
-    directions = ['w', 'a', 's', 'd']
-    random.shuffle(directions)
-    for direction in directions:
-        new_position = move_character(enemy_position, direction, maze)
-        if new_position != enemy_position:
-            return new_position
-    return enemy_position
+    if key not in [curses.KEY_LEFT, curses.KEY_RIGHT, curses.KEY_UP, curses.KEY_DOWN, ESC]:
+        key = prev_key
 
-# Main game function
-def main():
-    width, height = 20, 10  # Size of the maze
-    player_position = (1, 1)  # Starting position of the player
-    enemy_position = (width - 2, height - 2)  # Starting position of the enemy
+    # Calculate the next coordinates for the snake head
+    y = snake[0][0]
+    x = snake[0][1]
+    if key == curses.KEY_DOWN:
+        y += 1
+    if key == curses.KEY_UP:
+        y -= 1
+    if key == curses.KEY_LEFT:
+        x -= 1
+    if key == curses.KEY_RIGHT:
+        x += 1
 
-    maze = generate_maze(width, height)
+    snake.insert(0, (y, x))  # Append O(n) (consider deque for better performance)
 
-    while True:
-        clear_screen()
-        display_maze(maze, player_position, enemy_position)
-        print("Use 'w' 'a' 's' 'd' to move. Type 'exit' to quit.")
-        move = input("Your move: ").strip().lower()
+    # Check if we hit the border or ourselves
+    if y == 0 or y == 19 or x == 0 or x == 59 or snake[0] in snake[1:]:
+        break
 
-        if move == 'exit':
-            break
-        elif move in ['w', 'a', 's', 'd']:
-            player_position = move_character(player_position, move, maze)
-            if player_position == enemy_position:
-                print("You've been caught by the enemy! Game Over.")
-                break
-        else:
-            print("Invalid move. Please enter 'w', 'a', 's', 'd', or 'exit'.")
-            time.sleep(1)
-            continue
+    # Check if snake gets the food
+    if snake[0] == food:
+        score += 1
+        food = ()
+        while food == ():
+            food = (randint(1, 18), randint(1, 58))
+            if food in snake:
+                food = ()
+        win.addch(food[0], food[1], '#', curses.color_pair(1))
+    else:
+        # Move snake
+        last = snake.pop()
+        win.addch(last[0], last[1], ' ')
 
-        enemy_position = move_enemy(enemy_position, maze)
-        if player_position == enemy_position:
-            print("You've been caught by the enemy! Game Over.")
-            break
+    # Ensure the snake's head is always purple
+    win.addch(snake[0][0], snake[0][1], '*', curses.color_pair(2))
 
-        time.sleep(0.5)  # Add a small delay to make enemy movement visible
+    # Refresh the screen
+    win.refresh()
 
-if __name__ == "__main__":
-    main()
+# End the game
+curses.endwin()
+print(f"Made by NezrKaan 
+Final score = {score}")
