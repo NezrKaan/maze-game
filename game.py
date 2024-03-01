@@ -1,5 +1,37 @@
 import curses
 from random import randint
+import itertools
+import threading
+import time
+import sys
+import os
+
+#clear the terminal
+os.system('cls' if os.name == 'nt' else 'clear')
+
+
+done = False
+#here is the animation
+def animate():
+    for c in itertools.cycle(['|', '/', '-', '\\']):
+        if done:
+            break
+        sys.stdout.write('\rloading ' + c)
+        sys.stdout.flush()
+        time.sleep(0.001)
+    sys.stdout.write('\rSnake Game by NezrKaan     ')
+
+t = threading.Thread(target=animate)
+t.start()
+time.sleep(1)
+
+#clear the terminal
+os.system('cls' if os.name == 'nt' else 'clear')
+
+
+#long process here
+time.sleep(3)
+done = True
 
 # Initialize the screen
 curses.initscr()
@@ -13,6 +45,7 @@ curses.noecho()  # Prevent input from displaying in the screen
 curses.curs_set(0)  # Hide the cursor
 win.border(0)  # Draw a border around the screen
 win.nodelay(1)  # Make `win.getch()` non-blocking
+time.sleep(2)
 
 # Snake and food
 snake = [(4, 10), (4, 9), (4, 8)]  # Initial snake co-ordinates
@@ -75,5 +108,4 @@ while True:
 
 # End the game
 curses.endwin()
-print(f"Made by NezrKaan 
-Final score = {score}")
+print(f"Game made by NezrKaan and your final score = {score}")
