@@ -1,3 +1,17 @@
+# How to Play
+
+    Once the game starts, you will see the maze with the player represented by 'P' and the enemy by 'E'.
+    Use the following keys to move the player:
+        w to move up
+        a to move left
+        s to move down
+        d to move right
+    The goal is to navigate through the maze without being caught by the enemy.
+    To exit the game, type exit when prompted for your move.
+
+Contributing
+
+Feel free to fork the project, make improvements, and submit pull requests. We appreciate your contributions to make the game more enjoyable!
 # Terminal Maze Game
 
 This project is a simple 2D maze game that runs in the terminal. The player navigates through a maze trying to avoid an enemy that moves randomly. The game is played from a bird's-eye view, and the maze is represented by ASCII characters.
@@ -27,20 +41,4 @@ To play the game, follow these steps:
 3. Run the script with Python by typing the following command:
 
 ```bash
-python3 maze_game.py```
-
-
-How to Play
-
-    Once the game starts, you will see the maze with the player represented by 'P' and the enemy by 'E'.
-    Use the following keys to move the player:
-        w to move up
-        a to move left
-        s to move down
-        d to move right
-    The goal is to navigate through the maze without being caught by the enemy.
-    To exit the game, type exit when prompted for your move.
-
-Contributing
-
-Feel free to fork the project, make improvements, and submit pull requests. We appreciate your contributions to make the game more enjoyable!
+python3 maze_game.py
