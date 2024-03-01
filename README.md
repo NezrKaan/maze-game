@@ -27,7 +27,7 @@ To play the game, follow these steps:
 3. Run the script with Python by typing the following command:
 
 ```bash
-python3 maze_game.py
+python3 maze_game.py```
 
 
 How to Play
